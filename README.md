@@ -8,5 +8,5 @@ Wrapper to pull a single frame out of video
 
 If you are going run this in production you might want to:
 
- - set debug to `False `
+ - set debug to `False`
  - `export FLASK_ENV=production`
