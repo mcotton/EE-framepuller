@@ -25,6 +25,7 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     file_list = os.listdir('tmp')
+    file_list.sort()
     return render_template('index.html',  file_list=file_list )
 
 
