@@ -40,43 +40,59 @@ def download(filename):
 def pull_frame(device_id, start_timestamp, auth_key):
 
     end_timestamp = EagleEye._datetime_to_EEN_timestamp(\
-        EagleEye._EEN_timestamp_to_datetime(start_timestamp) + timedelta(seconds=4))
+        EagleEye._EEN_timestamp_to_datetime(start_timestamp) + timedelta(seconds=2))
 
     url = f"https://login.eagleeyenetworks.com/asset/play/video.flv?id={device_id}&start_timestamp={start_timestamp}&end_timestamp={end_timestamp}&A={auth_key}"
     print(url)
     
-    print('making pull_frame request')
-    res = requests.get(url, stream=True)
-    print('finished pull_frame request')
+
+
+    print('checking if we need to pull_frame request')
+
+    tmp_filename = f"tmp/{device_id}-{start_timestamp}.jpg"
     
-    print(f"fetch_video got a {res.status_code}")
+    try:
+        statinfo = os.stat(tmp_filename)
+        return json.dumps({ 
+                                    'proxy_status_code': None, 
+                                    'ffmpeg_return_code ': None,
+                                    'link_to_download': f"/api/download/{device_id}-{start_timestamp}.jpg" })
 
-    if res.status_code == 200:
-        # create a filename
-        # save response to file
-        # redirect to the URL serving the file
-        # ???
+    except FileNotFoundError:
+    
+        print('making pull_frame request')
+        res = requests.get(url, stream=True)
+        print('finished pull_frame request')
+    
+        print(f"fetch_video got a {res.status_code}")
 
-        local_filename = f"flv/{device_id}-{start_timestamp}.flv"
+        if res.status_code == 200:
+            # create a filename
+            # save response to file
+            # redirect to the URL serving the file
+            # ???
 
-        with open(local_filename, 'wb') as f:
-            shutil.copyfileobj(res.raw, f)
-            print(f"Done copying the the response into file: {local_filename}")
+            local_filename = f"flv/{device_id}-{start_timestamp}.flv"
 
-        cmd_string = f"ffmpeg -i {local_filename} -ss 00.00 -vframes 1 -y tmp/{device_id}-{start_timestamp}.jpg"
-        print(f"calling ffmpeg command: {cmd_string}")
+            with open(local_filename, 'wb') as f:
+                shutil.copyfileobj(res.raw, f)
+                print(f"Done copying the the response into file: {local_filename}")
 
-        cmd = subprocess.run(cmd_string.split(" "))
+            cmd_string = f"ffmpeg -i {local_filename} -ss 00.00 -vframes 1 -y tmp/{device_id}-{start_timestamp}.jpg"
+            print(f"calling ffmpeg command: {cmd_string}")
 
-        if cmd.returncode == 0:
-            print('FFPEG returned 0')
-            return json.dumps({ 
-                                'proxy_status_code': res.status_code, 
-                                'ffmpeg_return_code ': cmd.returncode,
-                                'link_to_download': f"/api/download/{device_id}-{start_timestamp}.jpg" })
-        else:
-            # handle error
-            print('FFMPEG returned :', cmd.returncode)
+            cmd = subprocess.run(cmd_string.split(" "))
+
+            if cmd.returncode == 0:
+                print('FFPEG returned 0')
+                return json.dumps({ 
+                                    'proxy_status_code': res.status_code, 
+                                    'ffmpeg_return_code ': cmd.returncode,
+                                    'link_to_download': f"/api/download/{device_id}-{start_timestamp}.jpg" })
+            else:
+                # handle error
+                print('FFMPEG returned :', cmd.returncode)
+
 
 
     return json.dumps({ 'status': 'Failed', 'proxy_status_code': res.status_code })
