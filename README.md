@@ -12,6 +12,6 @@ Or you can launch it using docker-compose:
 
 If you are going run this in production you might want to:
 
- - set debug to `False `
+ - set debug to `False`
  - `export FLASK_ENV=production`
 
