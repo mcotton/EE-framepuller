@@ -15,8 +15,8 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-RUN mkdir /app/tmp
+RUN mkdir -p /app/tmp
 
-RUN mkdir /app/flv
+RUN mkdir -p /app/flv
 
 CMD [ "./startup.sh" ]
